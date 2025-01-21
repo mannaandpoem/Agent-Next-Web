@@ -3,14 +3,18 @@ import asyncio
 from app.agent import ToolCallAgent
 from app.logger import logger
 from app.tool import Browser, Terminal, WebRead
+from app.tool.get_repo_template import GetRepoTemplateTool
+from app.tool.show_repo_structure import ShowRepoStructureTool
 
 
 async def main():
     agent = ToolCallAgent()
     agent.available_tools.add_tools(
         Terminal(),
-        Browser(),
-        WebRead(),
+        # Browser(),
+        # WebRead(),
+        GetRepoTemplateTool(),
+        ShowRepoStructureTool(),
     )
     while True:
         try:
