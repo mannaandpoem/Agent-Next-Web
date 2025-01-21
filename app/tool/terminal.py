@@ -70,9 +70,9 @@ Note: You MUST append a `sleep 0.05` to the end of the command for commands that
 
             # Combine outputs
             if result.output:
-                final_output.output += (result.output + "\n") if final_output.output else result.output
+                final_output.output += ("\n" + result.output) if final_output.output else result.output
             if result.error:
-                final_output.error += (result.error + "\n") if final_output.error else result.error
+                final_output.error += ("\n" + result.error) if final_output.error else result.error
 
         # Remove trailing newlines
         final_output.output = final_output.output.rstrip()

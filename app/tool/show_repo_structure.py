@@ -17,7 +17,7 @@ class RepoStructure:
         """Convert structure to pretty string representation with simple indentation"""
         root_path = os.path.abspath(self.path)
         project_name = os.path.basename(root_path)
-        lines = [f"Project: {project_name} ({root_path})"]
+        lines = [f"{project_name} ({root_path})"]
 
         def build_tree(items: Dict, level: int = 0):
             for name, contents in sorted(items.items()):

@@ -1,20 +1,20 @@
 import asyncio
 
-from app.agent import ToolCallAgent
+from app.agent import ToolCallAgent, TaoAgent, CodeActAgent
 from app.logger import logger
 from app.tool import Browser, Terminal, WebRead
-from app.tool.get_repo_template import GetRepoTemplateTool
+from app.tool.create_project_template import CreateProjectTemplateTool
 from app.tool.show_repo_structure import ShowRepoStructureTool
 
 
 async def main():
-    agent = ToolCallAgent()
+    agent = CodeActAgent()
     agent.available_tools.add_tools(
-        Terminal(),
+        # Terminal(),
         # Browser(),
         # WebRead(),
-        GetRepoTemplateTool(),
-        ShowRepoStructureTool(),
+        CreateProjectTemplateTool(),
+        # ShowRepoStructureTool(),
     )
     while True:
         try:
