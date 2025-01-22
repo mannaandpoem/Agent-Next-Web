@@ -1,10 +1,9 @@
-from dataclasses import dataclass
 from enum import Enum
-from typing import Any, List
+from typing import Any
 import subprocess
 import os
 
-from app.tool import BaseTool
+from app.tool import BaseTool, Filemap
 from app.tool.show_repo_structure import ShowRepoStructureTool
 
 
@@ -13,32 +12,27 @@ class TemplateType(Enum):
     BASIC = "basic"
 
 
-class CreateProjectTemplateTool(BaseTool):
-    name: str = "create_project_template"
-    description: str = "Create a minimal React TypeScript project template with predefined structure"
+class CreateWebTemplate(BaseTool):
+    name: str = "create_web_template"
+    description: str = "Create React project starter templates with predefined directory structures and base configuration"
     parameters: dict = {
         "type": "object",
         "properties": {
             "project_name": {
                 "type": "string",
-                "description": "Name of your new project",
+                "description": "Identifier for the template project structure",
                 "examples": ["my-react-app"]
             },
             "path": {
                 "type": "string",
-                "description": "Where to create the project (defaults to current directory)",
+                "description": "Target directory for template generation",
                 "default": ".",
                 "examples": ["./projects", "/path/to/workspace"]
             },
             "template_type": {
                 "type": "string",
                 "enum": ["minimal", "basic"],
-                "description": """
-                Template structure type:
-                - minimal: Bare minimum setup (just src and public)
-                - basic: Essential directories for small to medium projects
-                """,
-                "default": "minimal"
+                "description": "minimal: Basic setup (src/) | basic: Common project directories (src/, components/, styles/)"
             }
         },
         "required": ["project_name"]
@@ -51,7 +45,7 @@ class CreateProjectTemplateTool(BaseTool):
 
         try:
             # Use create-vite with the minimal template
-            create_command = "npm create vite@latest {project_name} -- --template react-ts"
+            create_command = f"yes | npm create vite@latest {project_name} -- --template react"
             subprocess.run(create_command.format(project_name=project_name),
                            shell=True, check=True, cwd=path)
 
@@ -80,26 +74,39 @@ class CreateProjectTemplateTool(BaseTool):
             show_tool = ShowRepoStructureTool()
             structure = await show_tool.execute(path=project_path)
 
-            return f"""
-Template Created: {project_name}
+            filemap_tool = Filemap()
+            all_file_map = []
+            src_dir = os.path.join(project_path, "src")
+            for file in os.listdir(src_dir):
+                file_path = os.path.join(src_dir, file)
+                if os.path.isdir(file_path):
+                    continue
+
+                # Get file content using Filemap
+                file_content = await filemap_tool.execute(file_path=file_path)
+                all_file_map.append(f"---{file_path}\n{file_content}\n")
+
+            file_map = "\n".join(all_file_map)
+
+            return f"""Template Created: {project_name}
 Location: {project_path}
 
 Structure:
 {structure}
 
+Filemap of src/:
+{file_map}
+
 Template Rules:
-1. Main entry point is src/main.tsx - DO NOT MODIFY
+1. Main entry point is src/main.jsx - DO NOT MODIFY
 2. Global styles in src/index.css - DO NOT MODIFY
-3. App logic goes in src/App.tsx - MODIFY THIS
+3. App logic goes in src/App.jsx - MODIFY THIS
 4. Create new components in src/components/
-5. Modify vite.config.js only if absolutely necessary
+5. Assets go in public/ directory
+6. Modify vite.config.js only for advanced configuration
 
-Development Flow:
-1. cd {project_path}
-2. Start by implementing your logic in App.tsx
-
-Note: The application won't run properly unless you maintain the core files structure and entry points. 
-You need to write a complete application logic in this template.
+Note: The base template includes essential Vite configuration. 
+Maintain the core entry files (main.jsx, App.jsx, index.css) and directory structure for proper compilation.
 """
 
         except subprocess.CalledProcessError as e:

@@ -4,7 +4,7 @@ from pydantic import Field
 
 from app.agent.toolcall import ToolCallAgent
 from app.prompt.codeact import NEXT_STEP_PROMPT, SYSTEM_PROMPT
-from app.tool import Finish, StrReplaceEditor, Terminal, ToolCollection
+from app.tool import Finish, StrReplaceEditor, ToolCollection, Bash
 
 
 class CodeActAgent(ToolCallAgent):
@@ -17,7 +17,7 @@ class CodeActAgent(ToolCallAgent):
     next_step_prompt: str = NEXT_STEP_PROMPT
 
     available_tools: ToolCollection = ToolCollection(
-        Terminal(), StrReplaceEditor(), Finish()
+        Bash(), StrReplaceEditor(), Finish()
     )
     special_tool_names: List[str] = Field(default_factory=lambda: [Finish().name])
 
